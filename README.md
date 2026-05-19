@@ -105,10 +105,15 @@ For M5Stack Module LLM, keep press the BOOT button and plug the USB cable into t
 cargo run --bin axdl-cli --package axdl-cli -- --file /path/to/image.axp --wait-for-device
 ```
 
-If you don't want to burn the rootfs, specify `--exclude-rootfs` option.
+If you don't want to burn specific partitions, specify `--exclude-partition` option.
+This option can be specified multiple times to exclude multiple partitions.
 
 ```shell
-cargo run --bin axdl-cli --package axdl-cli -- --file /path/to/image.axp --wait-for-device --exclude-rootfs
+cargo run --bin axdl-cli --package axdl-cli -- --file /path/to/image.axp --wait-for-device --exclude-partition ROOTFS
+```
+
+```shell
+cargo run --bin axdl-cli --package axdl-cli -- --file /path/to/image.axp --wait-for-device --exclude-partition ROOTFS --exclude-partition BOOT
 ```
 
 On Windows or other platforms where the official Axera AXDL driver is installed, you can use serial port access by specifying the --transport serial option:

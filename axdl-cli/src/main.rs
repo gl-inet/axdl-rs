@@ -44,11 +44,11 @@ struct Args {
     #[clap(short, long, help = "AXP image file")]
     file: std::path::PathBuf,
     #[clap(
-        short,
+        short = 'e',
         long,
-        help = "Exclude root filesystem from the download operation"
+        help = "Exclude specified partition(s) from the download operation (can be used multiple times). Note: 'factory' is always excluded by default."
     )]
-    exclude_rootfs: bool,
+    exclude_partition: Vec<String>,
     #[clap(short, long, help = "Wait for the device to be ready")]
     wait_for_device: bool,
     #[clap(long, help = "Timeout for waiting for the device to be ready")]
@@ -124,7 +124,7 @@ fn main() -> anyhow::Result<()> {
     // Open the specified image file and find the configuration XML file.
     let mut file = std::fs::File::open(&args.file)?;
     let config = DownloadConfig {
-        exclude_rootfs: args.exclude_rootfs,
+        exclude_partitions: args.exclude_partition,
     };
 
     let mut progress = CliProgress::new();

@@ -63,9 +63,34 @@ pub enum AxdlError {
     Unsupported(String),
 }
 
-#[derive(Debug)]
+const DEFAULT_EXCLUDE: &str = "factory";
+
+#[derive(Debug, Default)]
 pub struct DownloadConfig {
-    pub exclude_rootfs: bool,
+    pub exclude_partitions: Vec<String>,
+}
+
+impl DownloadConfig {
+    fn is_excluded(&self, name: &str) -> bool {
+        name.eq_ignore_ascii_case(DEFAULT_EXCLUDE)
+            || self
+                .exclude_partitions
+                .iter()
+                .any(|n| n.eq_ignore_ascii_case(name))
+    }
+
+    fn log_exclusions(&self, images: &[partition::Image]) {
+        for image in images {
+            if image.r#type() == partition::ImageType::Code && self.is_excluded(image.name()) {
+                let reason = if image.name().eq_ignore_ascii_case(DEFAULT_EXCLUDE) {
+                    "excluded by default"
+                } else {
+                    "excluded by user"
+                };
+                tracing::info!("Skipping partition: {} ({})", image.name(), reason);
+            }
+        }
+    }
 }
 
 pub trait DownloadProgress {
@@ -246,9 +271,9 @@ pub fn download_image<R: std::io::Read + std::io::Seek, Progress: DownloadProgre
     communication::set_partition_table(device, &partition_table)?;
 
     // Download all of "CODE" images
+    config.log_exclusions(project.images());
     for image in project.images().iter().filter(|image| {
-        image.r#type() == partition::ImageType::Code
-            && (!config.exclude_rootfs || image.name() != "ROOTFS")
+        image.r#type() == partition::ImageType::Code && !config.is_excluded(image.name())
     }) {
         tracing::debug!("Downloading image: {}", image.name());
         progress.report_progress(&format!("Downloading image {}", image.name()), None);
@@ -513,9 +538,9 @@ mod r#async {
         communication::r#async::set_partition_table(device, &partition_table).await?;
 
         // Download all of "CODE" images
+        config.log_exclusions(project.images());
         for image in project.images().iter().filter(|image| {
-            image.r#type() == partition::ImageType::Code
-                && (!config.exclude_rootfs || image.name() != "ROOTFS")
+            image.r#type() == partition::ImageType::Code && !config.is_excluded(image.name())
         }) {
             tracing::debug!("Downloading image: {}", image.name());
             progress.report_progress(&format!("Downloading image {}", image.name()), None);

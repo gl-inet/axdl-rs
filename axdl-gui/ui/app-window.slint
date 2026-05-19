@@ -1,4 +1,4 @@
-import { Button, VerticalBox, HorizontalBox, ProgressIndicator, CheckBox, AboutSlint } from "std-widgets.slint";
+import { Button, VerticalBox, HorizontalBox, ProgressIndicator, CheckBox, LineEdit, AboutSlint } from "std-widgets.slint";
 
 export component AppWindow inherits Window {
     in-out property <bool> serial_port_supported: false;
@@ -6,7 +6,7 @@ export component AppWindow inherits Window {
     in-out property <bool> image_file_opened: false;
     in-out property <string> image_file;
     in-out property <bool> downloading: false;
-    in-out property <bool> exclude_rootfs: false;
+    in-out property <string> exclude_partitions;
     in-out property <string> description;
     in-out property <bool> show_progress;
     in-out property <float> progress: -1.0;
@@ -62,10 +62,10 @@ export component AppWindow inherits Window {
                         root.open-image();
                     }
                 }
-                CheckBox {
-                    text: "Exclude rootfs";
+                LineEdit {
+                    placeholder-text: "Exclude partitions (comma-separated, e.g. ROOTFS,BOOT). Factory excluded by default.";
                     enabled: !root.downloading;
-                    checked <=> root.exclude_rootfs;
+                    text <=> root.exclude_partitions;
                 }
             }
 

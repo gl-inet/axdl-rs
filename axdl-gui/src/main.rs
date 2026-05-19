@@ -513,7 +513,11 @@ fn gui_main() -> Result<(), Box<dyn std::error::Error>> {
                 let result: Result<(), Box<dyn std::error::Error>> = async {
                     let mut progress = GuiProgress::new(ui_handle.clone());
                     let config = DownloadConfig {
-                        exclude_rootfs: ui.get_exclude_rootfs(),
+                        exclude_partitions: ui.get_exclude_partitions()
+                            .split(',')
+                            .map(|s| s.trim().to_string())
+                            .filter(|s| !s.is_empty())
+                            .collect(),
                     };
                     let image_file_ref = image_file.borrow();
                     let file = FileWrapper::new(image_file_ref.as_ref().unwrap().inner());
